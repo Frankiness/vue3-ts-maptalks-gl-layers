@@ -14,6 +14,7 @@ import {
 } from "@maptalks/gl-layers";
 import { onMounted } from "vue";
 import * as dat from "dat.gui";
+import { intersectionTypeAnnotation } from "@babel/types";
 
 type IMapConfig = {
   center: number[];
@@ -29,6 +30,14 @@ type ICoordinate = {
   y: number;
   z: number;
 };
+
+let groupLayer: GroupGLLayer;
+let map: maptalks.Map;
+let viewshedAnalysis: ViewshedAnalysis = null,
+  eyePos,
+  lookPoint,
+  verticalAngle,
+  horizontalAngle;
 
 const mapConfig: IMapConfig = {
   center: [118.8788535, 28.9115894],
@@ -51,12 +60,7 @@ const mapConfig: IMapConfig = {
 };
 
 const initMap = () => {
-  let viewshedAnalysis: ViewshedAnalysis = null,
-    eyePos,
-    lookPoint,
-    verticalAngle,
-    horizontalAngle;
-  const map = new maptalks.Map("map", mapConfig);
+  map = new maptalks.Map("map", mapConfig);
 
   const sceneConfig = {
     environment: {
@@ -101,10 +105,16 @@ const initMap = () => {
       },
     },
   };
-  const groupLayer = new GroupGLLayer("g", [], {
+  groupLayer = new GroupGLLayer("g", [], {
     sceneConfig,
   }).addTo(map);
 
+  loadTileset();
+
+  analysisIntersect();
+};
+
+const loadTileset = () => {
   const thrDlayer = new Geo3DTilesLayer("3d-tiles", {
     services: [
       {
@@ -139,7 +149,9 @@ const initMap = () => {
     });
     viewshedAnalysis.addTo(groupLayer);
   });
+};
 
+const analysisIntersect = () => {
   // 以下是绘制可视域分析的交互逻辑
   let altitudes: number[] = [],
     coordinates: any[] = [],
