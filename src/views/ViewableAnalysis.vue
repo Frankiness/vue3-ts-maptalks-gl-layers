@@ -14,7 +14,6 @@ import {
 } from "@maptalks/gl-layers";
 import { onMounted } from "vue";
 import * as dat from "dat.gui";
-import { intersectionTypeAnnotation } from "@babel/types";
 
 type IMapConfig = {
   center: number[];
